@@ -1,0 +1,20 @@
+# Utilise une version de Node stable
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Installation des dépendances
+COPY package*.json ./
+RUN npm install
+
+# Copie du reste du code source
+COPY . .
+
+# On compile le code TypeScript en JavaScript
+RUN npm run build
+
+# Port par défaut de NestJS
+EXPOSE 3000
+
+# Commande pour lancer le serveur en mode développement avec watch
+CMD ["npm", "run", "start:dev"]

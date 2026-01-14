@@ -1,0 +1,61 @@
+services:
+  # --- BASE DE DONNÉES ---
+  postgres:
+    image: postgres:17-alpine
+    container_name: shader-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+
+  # --- STOCKAGE FICHIERS ---
+  minio:
+    image: minio/minio
+    container_name: shader-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+
+  # --- BACKEND (NestJS) ---
+  backend:
+    build: ./nestjs-shader-community-backend
+    container_name: shader-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./nestjs-shader-community-backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - minio
+
+  # --- FRONTEND (React + Vite) ---
+  frontend:
+    build: ./shader-frontend
+    container_name: shader-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./shader-frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000
