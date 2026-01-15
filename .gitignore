@@ -1,10 +1,12 @@
 # Dependencies
 node_modules/
+jspm_packages/
 
 # Environment variables
 .env
 .env.*
 !.env.example
+!.env.test
 
 # Build outputs
 dist/
@@ -35,9 +37,15 @@ Desktop.ini
 docker-compose.override.yml
 
 # NestJS specific
-/nestjs-shader-community-backend/dist/
-/nestjs-shader-community-backend/*.tsbuildinfo
+*.tsbuildinfo
 
 # Frontend specific (Vite/React)
-/shader-frontend/dist/
-/shader-frontend/.eslintcache
+.eslintcache
+*.local
+
+# Testing
+test-results/
+playwright-report/
+blob-report/
+junit.xml
+
